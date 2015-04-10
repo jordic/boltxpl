@@ -60,12 +60,23 @@ pre {outline: 1px solid #ccc; padding: 5px; margin: 5px; }
 
 
 <script type="template/javascript" id="tplTable">
-<h4><%= p %></h4>
+	<div class="row">
+		<div class="col-md-6">
+			<h4><a href="/"><span class="glyphicon glyphicon-home"> </span></a>&nbsp;<span style="padding-left:10px"><%= p %></span></h4>
+		</div>
+		<div class="col-md-6 text-right">
+			<% if( p == "") { %>
+			<button id="AddKey" class="btn btn-success">Add Bucket</button>
+			<% } else { %>
+			<button id="AddKey" class="btn btn-success">Add Key</button>
+			<% }  %>
+		</div>
+	</div>
 	<table width="100%" class="table">
 		<thead>
 			<tr>
 				<td>Key</td>
-				<td>Actions</td>
+				<td align="right">Actions</td>
 			</tr>
 		</thead>
 		<% _.each(c, function(obj, i) { %>
@@ -76,7 +87,10 @@ pre {outline: 1px solid #ccc; padding: 5px; margin: 5px; }
 					<span class="glyphicon glyphicon-file"> </span> &nbsp;<a data-key="<%= obj.get("Key") %>" class="key"><%= obj.get("Key") %></a>
 					<% } %>
 					</td>
-				<td> </td>
+				<td align="right">
+					<span class="glyphicon glyphicon-pencil" id="EditKey" data-key="<%= obj.id %>" style="cursor:pointer; padding-right:10px;"> </span>
+					<span class="glyphicon glyphicon-trash" id="DelKey" data-key="<%= obj.id %>" style="cursor:pointer"> </span>
+				</td>
 			</tr>
 			
 		<% }) %>

@@ -95,9 +95,9 @@ func (h *Handler) GetBucket(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) Index(w http.ResponseWriter, r *http.Request) {
-	t, err := template.New("template.html").Parse(TemplateHTML)
+	//t, err := template.New("template.html").Parse(TemplateHTML)
 
-	//t, err := template.New("listing").ParseFiles("cmd/xpl/template.html")
+	t, err := template.New("listing").ParseFiles("cmd/xpl/template.html")
 	if err != nil {
 		log.Fatalf("Template error %s", err)
 	}
