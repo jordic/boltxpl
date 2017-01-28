@@ -1,13 +1,17 @@
 package boltxpl
 
 import (
+	"encoding/binary"
 	"encoding/json"
+	"unicode/utf8"
 
 	"html/template"
 	"log"
 	"net/http"
+	"strconv"
 	"strings"
 
+	"fmt"
 	"github.com/boltdb/bolt"
 	"github.com/gorilla/mux"
 )
@@ -36,8 +40,15 @@ func (h *Handler) Root(w http.ResponseWriter, req *http.Request) {
 	buckets := make([]DBItem, 0)
 	_ = h.DB.View(func(tx *Tx) error {
 		tx.ForEach(func(k []byte, bucket *bolt.Bucket) error {
+
+			//check for invalid string
+			keyString := string(k)
+			if !utf8.ValidString(keyString) {
+				keyString = strconv.Itoa(int(binary.BigEndian.Uint64(k)))
+			}
+
 			item := DBItem{
-				Key:      string(k),
+				Key:      keyString,
 				IsBucket: true,
 			}
 			buckets = append(buckets, item)
@@ -74,9 +85,17 @@ func (h *Handler) GetBucket(w http.ResponseWriter, r *http.Request) {
 		}
 
 		for k, v := c.Seek([]byte(seek)); k != nil; k, v = c.Next() {
-			s := DBItem{
-				Key: string(k),
+
+			//check for invalid string
+			keyString := string(k)
+			if !utf8.ValidString(keyString) {
+				keyString = strconv.Itoa(int(binary.BigEndian.Uint64(k)))
 			}
+
+			s := DBItem{
+				Key: keyString,
+			}
+
 			if v == nil {
 				s.IsBucket = true
 			}
@@ -90,6 +109,7 @@ func (h *Handler) GetBucket(w http.ResponseWriter, r *http.Request) {
 	})
 
 	enc, _ := json.Marshal(result)
+	fmt.Println("sending keys for bucket", string(enc))
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(enc)
 }
@@ -116,6 +136,7 @@ func (h *Handler) ViewKey(w http.ResponseWriter, r *http.Request) {
 	r.ParseForm()
 	bucket := r.Form.Get("bucket")
 	key := r.Form.Get("key")
+	fmt.Println("Got viewkey key:", key)
 	var res []byte
 	_ = h.DB.View(func(tx *Tx) error {
 		b := tx.NestedBucket(bucket)
@@ -123,8 +144,19 @@ func (h *Handler) ViewKey(w http.ResponseWriter, r *http.Request) {
 			return nil
 		}
 		res = b.Get([]byte(key))
+		// check for nil and try as int(64)
+		if res == nil {
+			i, _ := strconv.Atoi(key)
+			res = b.Get(itob(int64(i)))
+		}
 		return nil
 	})
 	w.Write(res)
 
+}
+
+func itob(v int64) []byte {
+	b := make([]byte, 8)
+	binary.BigEndian.PutUint64(b, uint64(v))
+	return b
 }

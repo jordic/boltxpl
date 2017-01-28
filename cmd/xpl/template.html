@@ -30,7 +30,7 @@ pre {outline: 1px solid #ccc; padding: 5px; margin: 5px; }
 
 <div class="row">
 	<div class="col-md-12" id="table">
-		
+
 	</div>
 </div>
 </div>
@@ -39,8 +39,8 @@ pre {outline: 1px solid #ccc; padding: 5px; margin: 5px; }
 <div class="modal fade" id="ViewKey" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
   <div class="modal-dialog">
     <div class="modal-content" id="ViewKeyContent">
-    
-      
+
+
     </div>
   </div>
 </div>
@@ -78,7 +78,7 @@ pre {outline: 1px solid #ccc; padding: 5px; margin: 5px; }
 					</td>
 				<td> </td>
 			</tr>
-			
+
 		<% }) %>
 		<tr>
 			<td colspan="2" align="right">
@@ -90,7 +90,7 @@ pre {outline: 1px solid #ccc; padding: 5px; margin: 5px; }
 				<li><a href="#<%= p %>?p=<%= next %>">Next &raquo;</a></li>
 			<% } %>
 			</ul>
-			</td>		
+			</td>
 		</tr>
 	</table>
 </script>
@@ -105,7 +105,7 @@ function getQueryVariable(query, variable) {
 	if(query.length == 0)
 		return ""
     var vars = query.split('&');
-    
+
     for (var i = 0; i < vars.length; i++) {
         var pair = vars[i].split('=');
         if (decodeURIComponent(pair[0]) == variable) {
@@ -145,12 +145,12 @@ app.Model = Backbone.Model.extend({
 	}
 })
 app.Keys = Backbone.Collection.extend({
-	model: app.Model		
+	model: app.Model
 })
 app.View = Backbone.View.extend({
 	id: 'registros',
 	el: '#table',
-	
+
 	// Pagination
 	perPage : 15,
 	currentPage: 0,
@@ -158,12 +158,12 @@ app.View = Backbone.View.extend({
 	prev: "",
 	next: "",
 	Params: "",
-	
+
 	Current : "",
 	events: {
-		"click a.key": "ViewKey" 
+		"click a.key": "ViewKey"
 	},
-	
+
 	ViewKey: function(e) {
 		var k = $(e.originalEvent.target).data("key")
 		var self = this
@@ -173,10 +173,9 @@ app.View = Backbone.View.extend({
 				var t = JSON.parse(data)
 				str = JSON.stringify(t, undefined, 4);
 				data = '<pre>' + syntaxHighlight(str) + '</pre>'
-				
-			} 
-		
-		
+
+			}
+
 			var html = self.TplView({
 				title: k,
 				content: data
@@ -184,37 +183,37 @@ app.View = Backbone.View.extend({
 			$('#ViewKeyContent').html( html )
 			$('#ViewKey').modal()
 		})
-		
+
 		return false;
-		
+
 	},
-	
+
 	Template: _.template($("#tplTable").html()),
 	TplView: _.template($("#tplView").html()),
-	
+
 	ResetAndLoadData: function() {
 		this.currentPage = 0;
 		this.pages = []
 		this.next = ""
 		this.prev = ""
-		this.LoadData()	
+		this.LoadData()
 	},
-	
+
 	LoadData: function() {
 		var self = this
-		
+
 		if(this.Current == "") {
 			url = "/root"
 		} else {
 			url = "/bucket/" + this.Current
 		}
-		
+
 		$.get(url, this.GetParams(), function(data) {
 			self.collection = new app.Keys(data)
 			self.Render()
-		})	
+		})
 	},
-	
+
 	GetParams: function() {
 		var d = {}
 			seek = getQueryVariable(this.Params, "p");
@@ -222,26 +221,26 @@ app.View = Backbone.View.extend({
 			d["p"] = seek
 		return d
 	},
-	
+
 	Render: function() {
 		if(this.collection.length>this.perPage) {
 			this.next = this.collection.at(this.perPage).get("Key")
-		} else { 
-			this.next =""	
+		} else {
+			this.next =""
 		}
-		
+
 		var cpos = _.indexOf(this.pages, this.next)
 		if( cpos == -1 ) {
 			this.pages.push(this.collection.at(0).get("Key"))
 		} else {
 			this.pages = this.pages.splice(0, cpos)
 		}
-		
+
 		if( (this.pages.length-2) >= 0)
 			this.prev = this.pages[this.pages.length-2]
 		else
 			this.prev = ""
-	
+
 		var html = this.Template({
 			p: this.Current,
 			c: this.collection.models.slice(0, this.perPage),
@@ -250,14 +249,14 @@ app.View = Backbone.View.extend({
 		})
 		$('#table').html( html )
 	}
- 	
+
 })
 app.Router = Backbone.Router.extend({
 	routes: {
 		"*actions": "default"
 	}
 });
-    
+
 var ins,
 	app_router;
 
@@ -270,15 +269,15 @@ $(document).ready(function(){
 			ins.Params = ""
 			ins.ResetAndLoadData()
 		} else {
-			var ls = window.location.href; 
-			
+			var ls = window.location.href;
+
 			if(ls.indexOf("?") != -1) {
 				var rest = ls.split("?")
 				ins.Params = rest[1]
 			} else {
 				ins.Params = ""
 			}
-			
+
 			ins.Current	= actions
 			if(ins.Params.length==0) ins.ResetAndLoadData()
 			else ins.LoadData()
@@ -288,7 +287,7 @@ $(document).ready(function(){
     // Start Backbone history a necessary step for bookmarkable URL's
     Backbone.history.start();
 
-	
+
 })
 </script>
 </body>
